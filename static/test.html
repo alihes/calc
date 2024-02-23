@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coolest Web Page</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .slider {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            height: 400px;
+        }
+
+        .slides {
+            display: flex;
+            transition: transform 2s;
+        }
+
+        .slide {
+            flex: 1 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide img {
+            width: 100%;
+            height: auto;
+        }
+
+        .caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        button.prev {
+            left: 0;
+        }
+
+        button.next {
+            right: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="slider">
+        <button class="prev">Previous</button>
+        <div class="slides">
+            <div class="slide">
+                <img src="https://picsum.photos/id/1015/600/400" alt="Image 1">
+                <div class="caption">Caption 1</div>
+            </div>
+            <div class="slide">
+                <img src="https://picsum.photos/id/1016/600/400" alt="Image 2">
+                <div class="caption">Caption 2</div>
+            </div>
+            <div class="slide">
+                <img src="https://picsum.photos/id/1018/600/400" alt="Image 3">
+                <div class="caption">Caption 3</div>
+            </div>
+        </div>
+        <button class="next">Next</button>
+    </div>
+    <script>
+        const slides = document.querySelector('.slides');
+        const prevButton = document.querySelector('.prev');
+        const nextButton = document.querySelector('.next');
+
+        let currentSlide = 0;
+
+        function showSlide(n) {
+            slides.style.transform = `translateX(-${n * 100}%)`;
+            currentSlide = n;
+        }
+
+        function nextSlide() {
+            showSlide((currentSlide + 1) % slides.children.length);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1 < 0 ? slides.children.length - 1 : currentSlide - 1);
+        }
+
+        showSlide(currentSlide);
+
+        prevButton.addEventListener('click', prevSlide);
+        nextButton.addEventListener('click', nextSlide);
+    </script>
+</body>
+</html>
