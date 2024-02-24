@@ -98,6 +98,8 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 		} else { 
 			val2 = data.Result
 			data.Result = do(val1,val2,op)
+			val1 = data.Result
+			val2 = 0
 		}
 		op = "-"
 	case 15:
@@ -107,6 +109,8 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 		} else { 
 			val2 = data.Result
 			data.Result = do(val1,val2,op)
+			val1 = data.Result
+			val2 = 0
 		}
 		op = "/"
 	case 16:
@@ -116,17 +120,14 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 		} else { 
 			val2 = data.Result
 			data.Result = do(val1,val2,op)
+			val1 = data.Result
+			val2 = 0
+			data.Result = 0
 		}
 		op = "*"
 //todo-make the . right
 	case 17:
-		if val1 == 0 {
-			val1 = data.Result
-			data.Result = 0
-		} else { 
-			val2 = data.Result
-			data.Result = do(val1,val2,op)
-		}
+		
 		op = "d"
 	case 18:
 		if val1 == 0 {
@@ -134,6 +135,8 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			val2 = data.Result
 			data.Result = do(val1,val2,op)
+			val1 = data.Result
+			val2 = 0
 		}
 		op = "="
 	case 19:
@@ -143,6 +146,8 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 		} else { 
 			val2 = data.Result
 			data.Result = do(val1,val2,op)
+			val1 = data.Result
+			val2 = 0
 		}
 		op = "+"
 	default:
