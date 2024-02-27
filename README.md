@@ -6,3 +6,10 @@ the ![html code](https://www.geeksforgeeks.org/html-calculator/) of the calculat
 ### Preview
 ![alt text](https://github.com/alihes/calc/blob/main/static/Screenshot_20240223_224955.png)
 
+## ToDo
+. button is not working
+% button is not working
+result is Common for all clients
+
+# is it good ToDo
+better home page
