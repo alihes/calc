@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -12,16 +14,16 @@ import (
 )
 
 var calcTmp = template.Must(template.ParseFiles("static/calc.html"))
-var op string = ""
-var val1,val2 float64 = 0,0
+// var op string = ""
+// var val1,val2 float64 = 0,0
 
 type Data struct {
 	Result float64
 }
 
-var data = &Data{
-	Result: 0,
-}
+// var data = &Data{
+// 	Result: 0,
+// }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprint(w, "Hello you've requested: %s/n", r.URL.Path)
@@ -49,7 +51,6 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 func do(a float64, b float64, op string) float64{
 	switch op{
 	case "+":
-		fmt.Printf("%s + %s = %s",a,b,a+b)
 		return a + b
 	case "-":
 		return a - b
@@ -64,7 +65,68 @@ func do(a float64, b float64, op string) float64{
 	return float64(0)
 }
 func calcHandler(w http.ResponseWriter, r *http.Request) {
-	// op := ""
+	data := &Data{
+		Result: 0,
+	}
+	var val1 float64 = 0
+	var val2 float64 = 0
+	op := ""
+	Cval1, err := r.Cookie("Val1")
+    if err != nil {
+        switch {
+        case errors.Is(err, http.ErrNoCookie):
+            // http.Error(w, "cookie not found", http.StatusBadRequest)
+        default:
+            log.Println(err)
+            http.Error(w, "server error", http.StatusInternalServerError)
+        }
+        // return
+    } else {
+		val1,_ = strconv.ParseFloat(Cval1.Value,64)
+	}
+	Cval2, err := r.Cookie("Val2")
+    if err != nil {
+        switch {
+        case errors.Is(err, http.ErrNoCookie):
+            // http.Error(w, "cookie not found", http.StatusBadRequest)
+        default:
+            log.Println(err)
+            http.Error(w, "server error", http.StatusInternalServerError)
+        }
+        // return
+    } else {
+		val2,_ = strconv.ParseFloat(Cval2.Value,64)
+	}
+	Cres, err := r.Cookie("Res")
+    if err != nil {
+        switch {
+        case errors.Is(err, http.ErrNoCookie):
+            // http.Error(w, "cookie not found", http.StatusBadRequest)
+        default:
+            log.Println(err)
+            http.Error(w, "server error", http.StatusInternalServerError)
+        }
+        // return
+    } else {
+		data.Result,_ = strconv.ParseFloat(Cres.Value,64)
+	}
+	Cop, err := r.Cookie("Op")
+    if err != nil {
+        switch {
+        case errors.Is(err, http.ErrNoCookie):
+            // http.Error(w, "cookie not found", http.StatusBadRequest)
+        default:
+            log.Println(err)
+            http.Error(w, "server error", http.StatusInternalServerError)
+        }
+        // return
+    } else {
+		op = Cop.Value
+	}
+
+
+
+
 	vars := mux.Vars(r)
 
 	a, err := strconv.Atoi(vars["action"])
@@ -158,6 +220,28 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("fuck me")
 	}
 	}
+
+
+	Csval1 := http.Cookie{
+		Name:     "Val1",
+		Value:     strconv.FormatFloat(val1,'g', -1, 64),
+	}
+	Csval2 := http.Cookie{
+		Name:    "Val2",
+		Value:   strconv.FormatFloat(val2, 'g', -1, 64),
+	}
+	Csres := http.Cookie{
+		Name:     "Res",
+		Value:	  strconv.FormatFloat(data.Result,'g',-1,64),
+	}
+	Csop := http.Cookie{
+		Name:     "Op",
+		Value:	  op,
+	}
+	http.SetCookie(w, &Csval1)
+	http.SetCookie(w, &Csval2)
+	http.SetCookie(w, &Csres)
+	http.SetCookie(w, &Csop)
 
 	buf := &bytes.Buffer{}
 	err = calcTmp.Execute(buf, data)
