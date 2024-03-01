@@ -12,7 +12,5 @@ the ![html code](https://www.geeksforgeeks.org/html-calculator/) of the calculat
 
 % button is not working
 
-result is Common for all clients
-
 ### is it good ToDo
 better home page
