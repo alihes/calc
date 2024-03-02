@@ -14,16 +14,11 @@ import (
 )
 
 var calcTmp = template.Must(template.ParseFiles("static/calc.html"))
-// var op string = ""
-// var val1,val2 float64 = 0,0
 
 type Data struct {
 	Result float64
 }
 
-// var data = &Data{
-// 	Result: 0,
-// }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprint(w, "Hello you've requested: %s/n", r.URL.Path)
@@ -58,8 +53,8 @@ func do(a float64, b float64, op string) float64{
 		return a * b
 	case "/":
 		return a / b
-	case "rad":
-		return float64(0)
+	case "":
+		return 0
 
 	}
 	return float64(0)
@@ -200,7 +195,7 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 			val1 = data.Result
 			val2 = 0
 		}
-		op = "="
+		// op = ""
 	case 19:
 		if val1 == 0 {
 			val1 = data.Result
