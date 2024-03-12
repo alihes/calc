@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"text/template"
-
+	
 	"github.com/gorilla/mux"
 )
 
@@ -43,21 +43,23 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<br><a href=\"/page/" + strconv.Itoa(i-1) + "\">previous</a>"))
 	w.Write([]byte("<br><a href=\"/\">main page</a>"))
 }
-func do(a float64, b float64, op string) float64{
-	switch op{
+func do(a *float64, b *float64, op *string) float64{
+	var c float64 = 0
+	switch *op{
 	case "+":
-		return a + b
+		c= *a + *b
 	case "-":
-		return a - b
+		c= *a - *b
 	case "*":
-		return a * b
+		c= *a * *b
 	case "/":
-		return a / b
+		c= *a / *b
 	case "":
 		return 0
 
 	}
-	return float64(0)
+
+	return c
 }
 func calcHandler(w http.ResponseWriter, r *http.Request) {
 	data := &Data{
@@ -65,6 +67,7 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var val1 float64 = 0
 	var val2 float64 = 0
+	var check bool = true
 	op := ""
 	Cval1, err := r.Cookie("Val1")
     if err != nil {
@@ -118,6 +121,19 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
     } else {
 		op = Cop.Value
 	}
+	Ccheck, err := r.Cookie("Check")
+    if err != nil {
+        switch {
+        case errors.Is(err, http.ErrNoCookie):
+            // http.Error(w, "cookie not found", http.StatusBadRequest)
+        default:
+            log.Println(err)
+            http.Error(w, "server error", http.StatusInternalServerError)
+        }
+        // return
+    } else {
+		check,_ = strconv.ParseBool(Ccheck.Value)
+	}	
 
 
 
@@ -134,7 +150,7 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 			data.Result = math.Sqrt(data.Result)
 		} else { 
 			val2 = data.Result
-			data.Result = do(val1,val2,op)
+			data.Result = do(&val1,&val2,&op)
 		}
 		op = "%"
 	case 11:
@@ -148,15 +164,17 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 		val1 = 0
 		val2 = 0
 		op = ""
+		check = false
 	case 14:
 		if val1 == 0 {
 			val1 = data.Result
 			data.Result = 0
 		} else { 
 			val2 = data.Result
-			data.Result = do(val1,val2,op)
+			data.Result = do(&val1,&val2,&op)
 			val1 = data.Result
 			val2 = 0
+			check = true
 		}
 		op = "-"
 	case 15:
@@ -165,9 +183,10 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 			data.Result = 0
 		} else { 
 			val2 = data.Result
-			data.Result = do(val1,val2,op)
+			data.Result = do(&val1,&val2,&op)
 			val1 = data.Result
 			val2 = 0
+			check = true
 		}
 		op = "/"
 	case 16:
@@ -176,10 +195,10 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 			data.Result = 0
 		} else { 
 			val2 = data.Result
-			data.Result = do(val1,val2,op)
+			data.Result = do(&val1,&val2,&op)
 			val1 = data.Result
 			val2 = 0
-			data.Result = 0
+			check = true
 		}
 		op = "*"
 //todo-make the . right
@@ -191,9 +210,10 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 			
 		} else {
 			val2 = data.Result
-			data.Result = do(val1,val2,op)
+			data.Result = do(&val1,&val2,&op)
 			val1 = data.Result
 			val2 = 0
+			check = true
 		}
 		// op = ""
 	case 19:
@@ -202,13 +222,27 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 			data.Result = 0
 		} else { 
 			val2 = data.Result
-			data.Result = do(val1,val2,op)
+			data.Result = do(&val1,&val2,&op)
 			val1 = data.Result
 			val2 = 0
+			check = true
 		}
 		op = "+"
 	default:
 		// data.Result,err = strconv.ParseFloat(strconv.FormatFloat(data.Result*10, 'f', -1, 64)  + strconv.Itoa(a),64)
+		// data.Result = data.Result * 10 + float64(a)
+		// if val1 == 0 {
+		// 	data.Result = data.Result * 10 + float64(a)
+		// } else { 
+		// 	if data.Result == val1 {
+		// 		data.Result = 0
+		// 	}
+		// 	data.Result = data.Result * 10 + float64(a)
+		// }
+		if check {
+			data.Result = 0
+			check = false
+		}
 		data.Result = data.Result * 10 + float64(a)
 		
 	if err != nil {
@@ -233,10 +267,15 @@ func calcHandler(w http.ResponseWriter, r *http.Request) {
 		Name:     "Op",
 		Value:	  op,
 	}
+	Cscheck := http.Cookie{
+		Name:     "Check",
+		Value:	  strconv.FormatBool(check),
+	}
 	http.SetCookie(w, &Csval1)
 	http.SetCookie(w, &Csval2)
 	http.SetCookie(w, &Csres)
 	http.SetCookie(w, &Csop)
+	http.SetCookie(w, &Cscheck)
 
 	buf := &bytes.Buffer{}
 	err = calcTmp.Execute(buf, data)
